@@ -63,7 +63,7 @@ fi
 export PATH="${TC_DIR}/bin:$PATH"
 export KBUILD_COMPILER_STRING="$("${TC_DIR}/bin/clang" --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 
-export KBUILD_BUILD_USER="linux"
+export KBUILD_BUILD_USER="Telegram"
 export KBUILD_BUILD_HOST="LeanHijosdesusMadres"
 export KBUILD_BUILD_VERSION="1"
 
