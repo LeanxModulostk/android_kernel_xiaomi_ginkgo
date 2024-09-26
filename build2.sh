@@ -65,6 +65,9 @@ export KBUILD_BUILD_USER="linux"
 export KBUILD_BUILD_HOST="LeanHijosdesusMadres"
 export KBUILD_BUILD_VERSION="1"
 
+# Set CROSS_COMPILE_ARM32 to prevent vDSO build error
+export CROSS_COMPILE_ARM32="${TC_DIR}/bin/arm-linux-gnueabi-"
+
 if [[ $1 = "-r" || $1 = "--regen" ]]; then
     make O=out ARCH=arm64 $DEFCONFIG savedefconfig
     cp out/defconfig arch/arm64/configs/$DEFCONFIG
@@ -79,7 +82,20 @@ mkdir -p out
 make O=out ARCH=arm64 $DEFCONFIG
 
 echo -e "\nStarting compilation...\n"
-make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar AS=llvm-as NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CLANG_TRIPLE=aarch64-linux-gnu- Image.gz-dtb dtbo.img
+make -j$(nproc --all) O=out \
+    ARCH=arm64 \
+    CC=clang \
+    LD=ld.lld \
+    AR=llvm-ar \
+    AS=llvm-as \
+    NM=llvm-nm \
+    OBJCOPY=llvm-objcopy \
+    OBJDUMP=llvm-objdump \
+    STRIP=llvm-strip \
+    CROSS_COMPILE=aarch64-linux-gnu- \
+    CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+    CLANG_TRIPLE=aarch64-linux-gnu- \
+    Image.gz-dtb dtbo.img
 
 if [ -f "out/arch/arm64/boot/Image.gz-dtb" ] && [ -f "out/arch/arm64/boot/dtbo.img" ]; then
     echo -e "\nKernel compiled successfully! Zipping up...\n"
