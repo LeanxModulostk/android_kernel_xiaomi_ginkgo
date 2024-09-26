@@ -10,15 +10,14 @@ TC_DIR="$HOME/tc/weebx"
 AK3_DIR="$HOME/android/AnyKernel3"
 DEFCONFIG="vendor/lean-perf_defconfig"
 
-# Clang setup
-if ! [ -d "${TC_DIR}" ]; then
-    echo "Clang not found! Downloading WeebX Clang..."
+# Function to download and setup Clang
+download_and_setup_clang() {
+    echo "Downloading WeebX Clang..."
     CLANG_URL=$(curl -s https://raw.githubusercontent.com/v3kt0r-87/Clang-Stable/main/clang-weebx.txt)
     
-    # Check if CLANG_URL is valid
     if ! curl --output /dev/null --silent --head --fail "$CLANG_URL"; then
         echo "Failed to fetch Clang URL. Aborting..."
-        exit 1
+        return 1
     fi
 
     echo "Clang URL: $CLANG_URL"
@@ -29,37 +28,45 @@ if ! [ -d "${TC_DIR}" ]; then
     echo "Downloading Clang to $DOWNLOAD_PATH..."
     if ! wget "$CLANG_URL" -O "$DOWNLOAD_PATH"; then
         echo "Failed to download Clang. Aborting..."
-        exit 1
+        return 1
     fi
-    
-    echo "Creating directory ${TC_DIR}..."
-    mkdir -p "${TC_DIR}"
     
     echo "Extracting Clang..."
     if ! tar -xzf "$DOWNLOAD_PATH" -C "${TC_DIR}" --strip-components=1; then
         echo "Failed to extract Clang. Aborting..."
-        exit 1
+        return 1
     fi
 
     echo "Removing downloaded archive..."
     rm -f "$DOWNLOAD_PATH"
     
     echo "Clang setup completed successfully."
+    return 0
+}
+
+# Create TC_DIR if it doesn't exist
+mkdir -p "$TC_DIR"
+
+# Check for Clang binary
+if [ ! -f "${TC_DIR}/bin/clang" ]; then
+    echo "Clang binary not found. Attempting to download..."
+    if ! download_and_setup_clang; then
+        echo "Failed to setup Clang. Aborting..."
+        exit 1
+    fi
 else
-    echo "Clang directory found at ${TC_DIR}. Skipping download."
+    echo "Clang binary found at ${TC_DIR}/bin/clang."
 fi
 
-# Check if clang binary exists
-if [ ! -f "${TC_DIR}/bin/clang" ]; then
-    echo "Clang binary not found at ${TC_DIR}/bin/clang. Setup may have failed."
-    exit 1
-fi
+# Verify Clang version
+CLANG_VERSION=$("${TC_DIR}/bin/clang" --version | head -n 1)
+echo "Detected Clang version: $CLANG_VERSION"
 
 export PATH="${TC_DIR}/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
 
-export KBUILD_COMPILER_STRING="$("${TC_DIR}/bin/clang" --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export KBUILD_COMPILER_STRING="$CLANG_VERSION"
 export KBUILD_BUILD_USER="Telegram"
 export KBUILD_BUILD_HOST="LeanHijosdesusMadres"
 
@@ -94,7 +101,7 @@ if [ -f "$ZIMAGE_DIR/Image.gz-dtb" ] && [ -f "$ZIMAGE_DIR/dtbo.img" ]; then
     cp -fp "$ZIMAGE_DIR/Image.gz" tmp
     cp -fp "$ZIMAGE_DIR/dtbo.img" tmp
     cp -fp "$ZIMAGE_DIR/dtb" tmp
-    cp -rp "$AK3_DIR/*" tmp
+    cp -rp "$AK3_DIR/"* tmp
 
     cd tmp
     7za a -mx9 tmp.zip *
