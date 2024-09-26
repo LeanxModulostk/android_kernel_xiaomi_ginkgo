@@ -10,9 +10,6 @@ TC_DIR="$HOME/tc/weebx"
 AK3_DIR="$HOME/android/AnyKernel3"
 DEFCONFIG="vendor/lean-perf_defconfig"
 
-# Create TC_DIR if it doesn't exist
-mkdir -p "$TC_DIR"
-
 # Clang setup
 if ! [ -d "${TC_DIR}" ]; then
     echo "Clang not found! Downloading WeebX Clang..."
