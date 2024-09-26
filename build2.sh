@@ -6,7 +6,7 @@ TC_DIR="$HOME/tc/zyc"
 GCC_64_DIR="$HOME/tc/aarch64-linux-android-4.9"
 GCC_32_DIR="$HOME/tc/arm-linux-androideabi-4.9"
 AK3_DIR="$HOME/android/AnyKernel3"
-DEFCONFIG="vendor/ginkgo-perf_defconfig"
+DEFCONFIG="vendor/lean-perf_defconfig"
 
 export PATH="$TC_DIR/bin:$PATH"
 export KBUILD_BUILD_USER="linux"
