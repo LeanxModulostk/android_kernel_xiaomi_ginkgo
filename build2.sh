@@ -10,6 +10,9 @@ GCC_32_DIR="$HOME/tc/arm-linux-androideabi-4.9"
 AK3_DIR="$HOME/android/AnyKernel3"
 DEFCONFIG="vendor/ginkgo-perf_defconfig"
 
+# Create TC_DIR if it doesn't exist
+mkdir -p "$HOME/tc"
+
 # Clang setup
 if ! [ -d "${TC_DIR}" ]; then
     echo "Clang not found! Downloading WeebX Clang..."
@@ -24,7 +27,7 @@ if ! [ -d "${TC_DIR}" ]; then
     DOWNLOAD_PATH="$HOME/tc/$ARCHIVE_NAME"
     
     echo "Downloading Clang to $DOWNLOAD_PATH..."
-    if ! wget -P "$HOME/tc" "$CLANG_URL" -O "$DOWNLOAD_PATH"; then
+    if ! wget "$CLANG_URL" -O "$DOWNLOAD_PATH"; then
         echo "Failed to download Clang. Aborting..."
         exit 1
     fi
@@ -38,7 +41,7 @@ if ! [ -d "${TC_DIR}" ]; then
     mkdir -p "${TC_DIR}"
     
     echo "Extracting Clang..."
-    if ! tar -xvf "$DOWNLOAD_PATH" -C "${TC_DIR}"; then
+    if ! tar -xzf "$DOWNLOAD_PATH" -C "${TC_DIR}" --strip-components=1; then
         echo "Failed to extract Clang. Aborting..."
         exit 1
     fi
@@ -49,6 +52,12 @@ if ! [ -d "${TC_DIR}" ]; then
     echo "Clang setup completed successfully."
 else
     echo "Clang directory found at ${TC_DIR}. Skipping download."
+fi
+
+# Check if clang binary exists
+if [ ! -f "${TC_DIR}/bin/clang" ]; then
+    echo "Clang binary not found at ${TC_DIR}/bin/clang. Setup may have failed."
+    exit 1
 fi
 
 export PATH="${TC_DIR}/bin:$PATH"
